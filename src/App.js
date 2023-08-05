@@ -160,6 +160,7 @@ function Form({ handleAddReminders, handleZero, currentDate }) {
 //koristiti getTime za uporedjivanje vremena
 // selektovanoVreme = 2:30
 // trenutnoVreme = 3:29
+//todo!
 
 //Promenuti ovde test i reminders
 function ReminderList({ reminders, handleZero, handleDelete, currentDate }) {
