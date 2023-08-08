@@ -1,19 +1,35 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+// const test = [
+//   { description: "travel", date: "12.07.2021.", hour: "12", min: "00" },
+// ];
 
 export default function App() {
   const [items, setItems] = useState([]);
+  const [currentDate, setCurrentDate] = useState({
+    hour: new Date().getHours(),
+    min: new Date().getMinutes(),
+    date: new Date().getDate(),
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+  });
 
-  const [currentDate, setCurrentDate] = useState(
-    new Date().getTime()
-  )
+  //GODINA - MESEC - DAN
+  //handleZero(item.hour) === handleZero(currentDate.hour) && handleZero(item.min) === handleZero(currentDate.min) && item.date === `${String(currentDate.year)}-${String(currentDate.month)}-${String(currentDate.date)}`
 
   setInterval(
     () =>
-      setCurrentDate(new Date().getTime()),
-    40000
+      setCurrentDate({
+        hour: new Date().getHours(),
+        min: new Date().getMinutes(),
+        date: new Date().getDate(),
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+      }),
+    20000
   );
+  // console.log(currentDate)
 
   function handleAddItems(newObj) {
     setItems([...items, newObj]);
@@ -54,45 +70,29 @@ function Header() {
   );
 }
 
-
-//FORM FOR CREATE NEW REMINDER
 function Form({ handleAddReminders, handleZero, currentDate }) {
- 
+  const [hour, setHour] = useState("");
+  const [min, setMin] = useState("");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
-  const [time, setTime] = useState('');
-
-  const [hours, minutes] = time.split(':');
-  const [year, month, day] = date.split('-');
-
-  const hoursInt = Number(hours);
-  const minutesInt = Number(minutes);
-  const yearInt = Number(year);
-  const monthInt = Number(month) - 1;
-  const dayInt = Number(day);
-
-  const dateInMilisecond = new Date(yearInt, monthInt, dayInt, hoursInt, minutesInt);
-  const realTime = dateInMilisecond?.getTime();
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!description) return;
-
     const newRemind = {
       description: description,
       date: date,
-      hour: hoursInt,
-      min: minutesInt,
+      hour: hour,
+      min: min,
       id: description,
       done: false,
-      time: realTime,
     };
 
     handleAddReminders(newRemind);
-
+    setHour("");
+    setMin("");
     setDate("");
     setDescription("");
-    setTime("")
   }
 
   return (
@@ -114,24 +114,65 @@ function Form({ handleAddReminders, handleZero, currentDate }) {
       ></input>
 
       <label>Time:</label>
-      <span>
-        <input className="time" type='time' value={time} onChange={(t) => setTime(t.target.value)}/>
+      <span className="time">
+        <span className="hour-min">Hour:</span>
+        <select
+          value={hour}
+          onChange={(e) => setHour(Number(e.target.value))}
+          className="option"
+        >
+          {Array.from({ length: 24 }, (_, i) => i).map((num) => (
+            <option value={num} key={num}>
+              {handleZero(num)}
+            </option>
+          ))}
+        </select>
+
+        <span className="hour-min">Min:</span>
+        <select
+          value={min}
+          onChange={(e) => setMin(Number(e.target.value))}
+          className="option"
+        >
+          {Array.from({ length: 60 }, (_, i) => i * 5).map((num) => (
+            <option value={num} key={num}>
+              {handleZero(num)}
+            </option>
+          ))}
+        </select>
       </span>
       <br></br>
       <button className="submitBtn">Add</button>
+
+      <div className="currentTime">
+        <p>
+          Date:{currentDate.year}-{handleZero(currentDate.month)}-
+          {handleZero(currentDate.date)}
+        </p>
+        <p>
+          Time:{handleZero(currentDate.hour)}:{handleZero(currentDate.min)}
+        </p>
+      </div>
     </form>
   );
 }
-//----------------------------------------------------------------------------------------------------
 
+//koristiti getTime za uporedjivanje vremena
+// selektovanoVreme = 2:30
+// trenutnoVreme = 3:29
+//todo!
 
-//CONTAINER FOR ALL REMINDER
+//Promenuti ovde test i reminders
 function ReminderList({ reminders, handleZero, handleDelete, currentDate }) {
-  
   return (
     <div className="remind-list">
       {reminders.map((item) => {
-        return item.time <= currentDate ? (
+        // const [year, month, day] = item.date.split('-');
+        return handleZero(item.hour) <= handleZero(currentDate.hour) &&
+          handleZero(item.min) <= handleZero(currentDate.min) &&
+          item.date.split("-")[0] == currentDate.year &&
+          item.date.split("-")[1] == currentDate.month &&
+          item.date.split("-")[2] == currentDate.date ? (
           <RemindDone
             item={item}
             key={item.description}
@@ -150,10 +191,7 @@ function ReminderList({ reminders, handleZero, handleDelete, currentDate }) {
     </div>
   );
 }
-//----------------------------------------------------------------------------------------------------
 
-
-//FOOTER
 function Footer({ items }) {
   return (
     <footer>
@@ -161,11 +199,7 @@ function Footer({ items }) {
     </footer>
   );
 }
-//----------------------------------------------------------------------------------------------------
 
-
-
-//REMINDER(WHICH MUST TO DO)
 function Remind({ item, handleZero, handleDelete }) {
   return (
     <span className="remind-item">
@@ -180,16 +214,13 @@ function Remind({ item, handleZero, handleDelete }) {
         {item.date}
       </p>
       <p style={{ padding: "5px", fontWeight: "bold", fontSize: "1.5em" }}>
-        {handleZero(item.hour === 0 ? "0" : item.hour)} : {" "} {/*care about === or == */}
-        {handleZero(item.min === 0 ? "0" : item.min)}
+        {handleZero(item.hour == 0 ? "0" : item.hour)} :{" "}
+        {handleZero(item.min == 0 ? "0" : item.min)}
       </p>
     </span>
   );
 }
-//----------------------------------------------------------------------------------------------------
 
-
-//REMINDER(WHICH FINISHED)
 function RemindDone({ item, handleZero, setItems, handleDelete }) {
   const sound = new Audio("./audio.mp3");
   sound.play();
@@ -227,10 +258,9 @@ function RemindDone({ item, handleZero, setItems, handleDelete }) {
           opacity: "0.3",
         }}
       >
-        {handleZero(item.hour === 0 ? "0" : item.hour)} :{" "} {/*care about === or == */}
-        {handleZero(item.min === 0 ? "0" : item.min)}
+        {handleZero(item.hour == 0 ? "0" : item.hour)} :{" "}
+        {handleZero(item.min == 0 ? "0" : item.min)}
       </p>
     </span>
   );
 }
-//----------------------------------------------------------------------------------------------------

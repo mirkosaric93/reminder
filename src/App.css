@@ -119,13 +119,6 @@ footer{
 .currentTime{
   margin-top: 20px;
 }
-.currentTime p{
-  border: ridge;
-  width: 20%;
-  transform: translateX(198%);
-  border-radius: 10px;
-  margin: 2px;
-}
 .hidden{
   display: block;
   opacity: 0.1;
